@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinate Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #ddd;
+            font-size: 16px; /* Initial font size */
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 1px auto; /* Adjusted the top margin to 1px or auto for universal */
+            padding: 5px;
+            border-radius: 20px;
+            background-color: #333;
+        }
+
+        .container h2 {
+            margin-top: 1px;
+        }
+
+        button {
+            padding: 7px 15px;
+            background-color: #444;
+            border: none;
+            color: #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        #screenTypeButtons button {
+            margin: 5px 3px;
+        }
+
+        .selected {
+            background-color: #555;
+        }
+        p {
+            line-height: 5px; /* default is usually around 1.2 to 1.5 depending on the browser */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Coordinate & Screen % converter for BlueStacks and other display devices</h2>
+        <p>Font Size:
+            <button onclick="changeFontSize(-2)">-</button>
+            <button onclick="changeFontSize(2)">+</button>
+        </p>
+        <hr>
+        
+          
+        <p><strong>Coordinates are described using screen percentages:</strong></p>
+        <ul>
+            <li><strong>X,Y coordinate (0,0):</strong>
+                <ul style="font-size: 90%;">
+                    <li>Represents the top-left corner. Equals 0% of the screen's width and 0% of its height.</li>
+                </ul>
+            </li>
+            <br>
+            <li><strong>X,Y coordinate (99.9,99.9):</strong>
+                <ul style="font-size: 90%;">
+                    <li>Represents the bottom-right corner. Equals 100% of the screen's width and 100% of its height.</li>
+                </ul>
+            </li>
+            <br>
+            <li><strong>X,Y coordinate (50,50):</strong>
+                <ul style="font-size: 90%;">
+                    <li>Represents the center of the screen. Equals 50% of the screen's width and 50% of its height.</li>
+                </ul>
+            </li>
+        </ul>
+    
+        <p>Select screen type:</p>
+        <div id="screenTypeButtons">
+            <button onclick="populateResolutions('portrait')">Portrait</button>
+            <button onclick="populateResolutions('landscape')">Landscape</button>
+            <button onclick="populateResolutions('ultrawide')">Ultra-wide</button>
+            <button onclick="populateResolutions('custom')">Custom</button>
+        </div>
+        <p>Resolution:</p>
+        <div id="resolutionButtons"></div> <!-- Placeholder for resolution buttons -->
+        <div id="customResolution" style="display: none;">
+            <input type="number" id="resWidth" placeholder="Width"> x
+            <input type="number" id="resHeight" placeholder="Height">
+        </div>
+        <p>Enter Coordinates:</p>
+        <input type="number" id="coordX" placeholder="X"> ,
+        <input type="number" id="coordY" placeholder="Y">
+        <br><br>
+
+        <button onclick="convert()">Convert</button>
+        <button id="toggleConversionMode" onclick="toggleMode()">Switch to Convert to Coordinates</button>
+        <input type="hidden" id="conversionMode" value="toPercentage">
+        <p id="result"></p>
+    </div>
+    <script>
+        let selectedResolution = "";
+        let selectedScreenType = "";
+
+        function populateResolutions(type) {
+            selectedScreenType = type;  // Store the screen type
+
+            // Highlight the selected button
+            let buttons = document.querySelectorAll('#screenTypeButtons button');
+            buttons.forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.innerHTML.toLowerCase() === type) {
+                    btn.classList.add('selected');
+                }
+            });
+
+            let resolutionDiv = document.getElementById('resolutionButtons');
+            let customRes = document.getElementById('customResolution');
+
+            while (resolutionDiv.firstChild) {
+                resolutionDiv.removeChild(resolutionDiv.firstChild);
+            }
+
+            let resolutions;
+            if (type === "portrait") {
+                resolutions = ["540x960", "720x1280", "900x1600", "1080x1920", "1440x2560", "2160x3840"];
+            } else if (type === "landscape") {
+                resolutions = ["960x540", "1280x720", "1600x900", "1920x1080", "2560x1440", "3840x2160"];
+            } else if (type === "ultrawide") {
+                resolutions = ["1680x720", "2560x1080", "3440x1440", "5120x2160"];
+            }
+
+            if (type !== "custom") {
+                customRes.style.display = "none";
+                resolutions.forEach(res => {
+                    let btn = document.createElement('button');
+                    btn.innerText = res;
+                    btn.onclick = function() { setResolution(res); }; // Set resolution when button is clicked
+                    resolutionDiv.appendChild(btn);
+                });
+            } else {
+                customRes.style.display = "block";
+            }
+        }
+
+        function setResolution(resolution) {
+            selectedResolution = resolution;  // Store the clicked resolution
+            
+            let resButtons = document.querySelectorAll('#resolutionButtons button');
+            resButtons.forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.innerHTML === resolution) {
+                    btn.classList.add('selected');
+                }
+            });
+        }
+
+        function toggleMode() {
+            const mode = document.getElementById('conversionMode').value;
+            const toggleButton = document.getElementById('toggleConversionMode');
+
+            if (mode === "toPercentage") {
+                document.getElementById('conversionMode').value = "toCoordinates";
+                toggleButton.innerText = "Switch to Convert to Percentage";
+            } else {
+                document.getElementById('conversionMode').value = "toPercentage";
+                toggleButton.innerText = "Switch to Convert to Coordinates";
+            }
+        }
+
+        function convert() {
+            const mode = document.getElementById('conversionMode').value;
+
+            if (mode === "toPercentage") {
+                convertToPercentage();
+            } else {
+                convertToCoordinates();
+            }
+        }
+
+        function convertToPercentage() {
+            let resWidth, resHeight;
+        
+            if (selectedScreenType !== "custom") {
+                let splitRes = selectedResolution.split('x');
+                resWidth = splitRes[0];
+                resHeight = splitRes[1];
+            } else {
+                resWidth = document.getElementById('resWidth').value;
+                resHeight = document.getElementById('resHeight').value;
+            }
+        
+            let coordX = document.getElementById('coordX').value;
+            let coordY = document.getElementById('coordY').value;
+        
+            let xPercentage = (coordX / resWidth) * 100;
+            let yPercentage = (coordY / resHeight) * 100;
+        
+            document.getElementById('result').innerHTML = 
+                `X: ${xPercentage.toFixed(2)}% , Y: ${yPercentage.toFixed(2)}%`;
+        }
+
+        function convertToCoordinates() {
+            let resWidth, resHeight;
+
+            if (selectedScreenType !== "custom") {
+                let splitRes = selectedResolution.split('x');
+                resWidth = splitRes[0];
+                resHeight = splitRes[1];
+            } else {
+                resWidth = document.getElementById('resWidth').value;
+                resHeight = document.getElementById('resHeight').value;
+            }
+
+            let percentX = parseFloat(document.getElementById('coordX').value);
+            let percentY = parseFloat(document.getElementById('coordY').value);
+
+            let coordX = (percentX * resWidth) / 100;
+            let coordY = (percentY * resHeight) / 100;
+
+            document.getElementById('result').innerHTML = 
+                `X: ${Math.round(coordX)} , Y: ${Math.round(coordY)}`;
+        }
+
+        
+        
+        function changeFontSize(delta) {
+            let body = document.body;
+            let currentSize = parseInt(window.getComputedStyle(body, null).getPropertyValue('font-size'));
+            body.style.fontSize = `${currentSize + delta}px`;
+        }
+
+        document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' || event.keyCode === 13) {
+        convertToPercentage();
+    }
+});
+
+    </script>
+</body>
+
+</html>
+
