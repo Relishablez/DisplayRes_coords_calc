@@ -240,11 +240,10 @@
         }
 
         document.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter' || event.keyCode === 13) {
-        convertToPercentage();
-    }
-});
-
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                convert(); // Call the convert function instead of convertToPercentage
+        }
+        });
     </script>
 </body>
 
