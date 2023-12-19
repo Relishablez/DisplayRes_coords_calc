@@ -169,13 +169,15 @@
             const toggleButton = document.getElementById('toggleConversionMode');
 
             if (mode === "toPercentage") {
-                document.getElementById('conversionMode').value = "toCoordinates";
-                toggleButton.innerText = "Switch to Convert to Percentage";
+            document.getElementById('conversionMode').value = "toCoordinates";
+            toggleButton.innerText = "Switch to Convert to Percentage";
             } else {
                 document.getElementById('conversionMode').value = "toPercentage";
                 toggleButton.innerText = "Switch to Convert to Coordinates";
             }
+            convert(); // Perform conversion after switching mode
         }
+
 
         function convert() {
             const mode = document.getElementById('conversionMode').value;
