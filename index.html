@@ -84,37 +84,41 @@
             </li>
         </ul>
     
-        <p>Select screen type:</p>
+        <p><strong>Select screen type:</strong></p>
         <div id="screenTypeButtons">
             <button onclick="populateResolutions('portrait')">Portrait</button>
             <button onclick="populateResolutions('landscape')">Landscape</button>
             <button onclick="populateResolutions('ultrawide')">Ultra-wide</button>
             <button onclick="populateResolutions('custom')">Custom</button>
         </div>
-        <p>Resolution:</p>
+        <p><strong>Resolution:</strong></p>
         <div id="resolutionButtons"></div> <!-- Placeholder for resolution buttons -->
         <div id="customResolution" style="display: none;">
             <input type="number" id="resWidth" placeholder="Width"> x
             <input type="number" id="resHeight" placeholder="Height">
         </div>
-        <p>Enter Coordinates:</p>
+        <hr>
+        
+        <p>Enter Values of X and Y:
         <input type="number" id="coordX" placeholder="X"> ,
         <input type="number" id="coordY" placeholder="Y">
-        <br><br>
+        <br>
 
-        <button onclick="convert()">Convert</button>
-        <button id="toggleConversionMode" onclick="toggleMode()">Switch to Convert to Coordinates</button>
-        <input type="hidden" id="conversionMode" value="toPercentage">
-        <p id="result"></p>
+
+        <!-- Realtime Result display areas -->
+        <p id="coordinatesResult">Coordinates Result: Not calculated yet</p>
+        <p id="percentageResult">Percentage Result: Not calculated yet</p>
+
     </div>
+
+    <!-- JS CODE TO PERFORM CONVERSION -->
     <script>
         let selectedResolution = "";
         let selectedScreenType = "";
 
         function populateResolutions(type) {
-            selectedScreenType = type;  // Store the screen type
+            selectedScreenType = type;
 
-            // Highlight the selected button
             let buttons = document.querySelectorAll('#screenTypeButtons button');
             buttons.forEach(btn => {
                 btn.classList.remove('selected');
@@ -144,7 +148,7 @@
                 resolutions.forEach(res => {
                     let btn = document.createElement('button');
                     btn.innerText = res;
-                    btn.onclick = function() { setResolution(res); }; // Set resolution when button is clicked
+                    btn.onclick = function() { setResolution(res); };
                     resolutionDiv.appendChild(btn);
                 });
             } else {
@@ -153,8 +157,7 @@
         }
 
         function setResolution(resolution) {
-            selectedResolution = resolution;  // Store the clicked resolution
-            
+            selectedResolution = resolution;
             let resButtons = document.querySelectorAll('#resolutionButtons button');
             resButtons.forEach(btn => {
                 btn.classList.remove('selected');
@@ -169,29 +172,29 @@
             const toggleButton = document.getElementById('toggleConversionMode');
 
             if (mode === "toPercentage") {
-            document.getElementById('conversionMode').value = "toCoordinates";
-            toggleButton.innerText = "Switch to Convert to Percentage";
+                document.getElementById('conversionMode').value = "toCoordinates";
+                toggleButton.innerText = "Switch to Convert to Percentage";
             } else {
                 document.getElementById('conversionMode').value = "toPercentage";
                 toggleButton.innerText = "Switch to Convert to Coordinates";
             }
-            convert(); // Perform conversion after switching mode
+            updateResults();
         }
 
+        // Attach event listeners to the X and Y input fields
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('coordX').addEventListener('input', updateResults);
+            document.getElementById('coordY').addEventListener('input', updateResults);
+        });
 
-        function convert() {
-            const mode = document.getElementById('conversionMode').value;
-
-            if (mode === "toPercentage") {
-                convertToPercentage();
-            } else {
-                convertToCoordinates();
-            }
+        function updateResults() {
+            convertToPercentage();
+            convertToCoordinates();
         }
 
         function convertToPercentage() {
             let resWidth, resHeight;
-        
+
             if (selectedScreenType !== "custom") {
                 let splitRes = selectedResolution.split('x');
                 resWidth = splitRes[0];
@@ -200,15 +203,15 @@
                 resWidth = document.getElementById('resWidth').value;
                 resHeight = document.getElementById('resHeight').value;
             }
-        
+
             let coordX = document.getElementById('coordX').value;
             let coordY = document.getElementById('coordY').value;
-        
+
             let xPercentage = (coordX / resWidth) * 100;
             let yPercentage = (coordY / resHeight) * 100;
-        
-            document.getElementById('result').innerHTML = 
-                `X: ${xPercentage.toFixed(2)}% , Y: ${yPercentage.toFixed(2)}%`;
+
+            document.getElementById('percentageResult').innerHTML = 
+                `Percentage X: ${xPercentage.toFixed(2)}% , Y: ${yPercentage.toFixed(2)}%`;
         }
 
         function convertToCoordinates() {
@@ -223,18 +226,16 @@
                 resHeight = document.getElementById('resHeight').value;
             }
 
-            let percentX = parseFloat(document.getElementById('coordX').value);
-            let percentY = parseFloat(document.getElementById('coordY').value);
+            let coordX = document.getElementById('coordX').value;
+            let coordY = document.getElementById('coordY').value;
 
-            let coordX = (percentX * resWidth) / 100;
-            let coordY = (percentY * resHeight) / 100;
+            let xCoord = (coordX * resWidth) / 100;
+            let yCoord = (coordY * resHeight) / 100;
 
-            document.getElementById('result').innerHTML = 
-                `X: ${Math.round(coordX)} , Y: ${Math.round(coordY)}`;
+            document.getElementById('coordinatesResult').innerHTML = 
+                `Coordinates X: ${Math.round(xCoord)} , Y: ${Math.round(yCoord)}`;
         }
 
-        
-        
         function changeFontSize(delta) {
             let body = document.body;
             let currentSize = parseInt(window.getComputedStyle(body, null).getPropertyValue('font-size'));
@@ -243,11 +244,11 @@
 
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Enter' || event.keyCode === 13) {
-                convert(); // Call the convert function instead of convertToPercentage
-        }
+                updateResults();
+            }
         });
     </script>
+
 </body>
 
 </html>
-
