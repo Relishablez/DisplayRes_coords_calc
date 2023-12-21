@@ -148,7 +148,10 @@
                 resolutions.forEach(res => {
                     let btn = document.createElement('button');
                     btn.innerText = res;
-                    btn.onclick = function() { setResolution(res); };
+                    btn.onclick = function() { 
+                        setResolution(res);
+                        updateResults(); // Update results on resolution change
+                    };
                     resolutionDiv.appendChild(btn);
                 });
             } else {
